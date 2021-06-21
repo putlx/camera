@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <layer-list>
+            <item android:width="90dp" android:height="90dp" android:drawable="@drawable/gray_ring" />
+            <item android:width="53dp" android:height="53dp" android:drawable="@drawable/gray_circle" android:gravity="center" />
+        </layer-list>
+    </item>
+    <item android:state_focused="true">
+        <layer-list>
+            <item android:width="90dp" android:height="90dp" android:drawable="@drawable/gray_ring" />
+            <item android:width="53dp" android:height="53dp" android:drawable="@drawable/gray_circle" android:gravity="center" />
+        </layer-list>
+    </item>
+    <item>
+        <layer-list>
+            <item android:width="90dp" android:height="90dp" android:drawable="@drawable/white_ring" />
+            <item android:width="53dp" android:height="53dp" android:drawable="@drawable/white_circle" android:gravity="center" />
+        </layer-list>
+    </item>
+</selector>
