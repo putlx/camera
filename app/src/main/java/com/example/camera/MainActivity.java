@@ -35,8 +35,9 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -54,6 +55,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -65,15 +67,24 @@ public class MainActivity extends AppCompatActivity {
     private static final int INITIALIZE = 0;
     private static final int ENABLE_LOCATION_WATERMARK = 1;
     private static final int ENABLE_LAT_LONG_WATERMARK = 2;
+    private static final int SET_FIXED_LOCATION_WATERMARK = 3;
 
-    private static final int ANIMATION_DURATION = 170;
+    private static final String[] MONTHS = new String[]{
+            "一月", "二月", "三月", "四月", "五月", "六月",
+            "七月", "八月", "九月", "十月", "冬月", "腊月",
+    };
+    private static final String[] DAY_OF_WEEK = new String[]{
+            "", "星期日", "星期一", "星期二",
+            "星期三", "星期四", "星期五", "星期六",
+    };
 
     private ActivityMainBinding binding;
     private Handler daemon;
     private Handler ui;
     private ImageReader imageReader;
     private CameraDevice camera;
-    private String thumbnail;
+    private View[] templates;
+    private TextView[] templateSwitches;
 
     private boolean datetimeWatermarkEnabled = true;
     private boolean locationWatermarkEnabled = false;
@@ -82,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
     private int aeMode = CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH;
     private int flashMode = CaptureRequest.FLASH_MODE_TORCH;
     private int delay = 0;
+    private int currentTemplate = 0;
+    private String thumbnail;
     private String cameraId;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -91,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         binding.textureView.setKeepScreenOn(true);
-
         binding.getRoot().setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 if (binding.txt.isFocused()) {
@@ -106,13 +118,43 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        templates = new View[]{
+                binding.template0,
+                binding.template1,
+                binding.template2,
+                binding.template3,
+        };
+        templateSwitches = new TextView[]{
+                binding.template0Switch,
+                binding.template1Switch,
+                binding.template2Switch,
+                binding.template3Switch,
+        };
+        for (int i = 0; i < templateSwitches.length; ++i) {
+            final int j = i;
+            templateSwitches[i].setOnClickListener(v -> setCurrentTemplate(j));
+        }
+
+        ui = new Handler();
+        final HandlerThread thread = new HandlerThread("daemon");
+        thread.start();
+        daemon = new Handler(thread.getLooper());
+
         binding.watermarkSwitch.setOnClickListener(v -> {
-            if (binding.watermarkSwitches.getVisibility() == View.VISIBLE) {
+            if (watermarkSwitchesVisible()) {
                 hideWatermarkSwitches();
             } else {
                 showWatermarkSwitches();
             }
         });
+
+        updateDatetime();
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                ui.post(() -> updateDatetime());
+            }
+        }, 62 - Calendar.getInstance().get(Calendar.SECOND), 60000);
 
         binding.datetimeWatermarkSwitch.setOnClickListener(v -> {
             datetimeWatermarkEnabled = !datetimeWatermarkEnabled;
@@ -125,13 +167,6 @@ public class MainActivity extends AppCompatActivity {
             }
             adjustWatermark();
         });
-        ui = new Handler();
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                ui.post(() -> binding.datetime.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date())));
-            }
-        }, 0, 10000);
 
         binding.locationWatermarkSwitch.setOnClickListener(v -> {
             if (locationWatermarkEnabled) {
@@ -211,12 +246,12 @@ public class MainActivity extends AppCompatActivity {
                         makeToast("No camera available");
                         finishAffinity();
                     }
-                    binding.frameLayout.animate().alpha(.5f).scaleX(.8f).scaleY(.8f).setDuration(ANIMATION_DURATION);
+                    binding.frameLayout.animate().alpha(.5f).scaleX(.8f).scaleY(.8f).setDuration(170);
                     binding.frameLayout
                             .animate()
                             .alpha(0f)
                             .scaleX(0f)
-                            .setDuration(ANIMATION_DURATION)
+                            .setDuration(170)
                             .withStartAction(() -> {
                                 if (Arrays.stream(cameraIdList).anyMatch(id -> id.equals(cameraId))) {
                                     for (int i = 0; i < cameraIdList.length; ++i) {
@@ -234,8 +269,8 @@ public class MainActivity extends AppCompatActivity {
                                         .animate()
                                         .alpha(.5f)
                                         .scaleX(.8f)
-                                        .setDuration(ANIMATION_DURATION);
-                                binding.frameLayout.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(ANIMATION_DURATION);
+                                        .setDuration(170);
+                                binding.frameLayout.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(170);
                             });
                 } catch (CameraAccessException e) {
                     makeToast(e);
@@ -243,10 +278,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        final HandlerThread thread = new HandlerThread("daemon");
-        thread.start();
-        daemon = new Handler(thread.getLooper());
 
         initialize();
     }
@@ -299,43 +330,63 @@ public class MainActivity extends AppCompatActivity {
                     makeToast("No permission to access location");
                 }
                 break;
+            case SET_FIXED_LOCATION_WATERMARK:
+                if (Arrays.stream(grantResults).allMatch(r -> r == PackageManager.PERMISSION_GRANTED)) {
+                    setFixedLocationWatermark();
+                } else {
+                    makeToast("No permission to access location");
+                }
+                break;
         }
     }
 
+    private void updateDatetime() {
+        final String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        final String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+        final String day_of_week = DAY_OF_WEEK[Calendar.getInstance().get(Calendar.DAY_OF_WEEK)];
+        binding.datetime.setText(String.format("%s %s", date, time));
+        binding.time.setText(time);
+        binding.time2.setText(time);
+        binding.date.setText(date);
+        binding.date2.setText(String.format("%s %s", day_of_week, date));
+        binding.month.setText(MONTHS[Calendar.getInstance().get(Calendar.MONTH)]);
+        binding.day.setText(String.format(Locale.getDefault(), "%02d", Calendar.getInstance().get(Calendar.DATE)));
+        binding.dayOfWeek.setText(day_of_week);
+    }
+
+    private void setCurrentTemplate(final int n) {
+        if (currentTemplate != n) {
+            templates[currentTemplate].setVisibility(View.GONE);
+            templateSwitches[currentTemplate].setTextColor(Color.WHITE);
+            templateSwitches[currentTemplate].setBackground(null);
+            templates[n].setVisibility(View.VISIBLE);
+            templateSwitches[n].setTextColor(getResources().getColor(R.color.yellow, null));
+            templateSwitches[n].setBackgroundResource(R.drawable.yellow_shadow);
+            currentTemplate = n;
+        }
+        if (n == 2 || n == 3) {
+            setFixedLocationWatermark();
+        }
+    }
+
+    private boolean watermarkSwitchesVisible() {
+        return binding.templateSwitches.getVisibility() == View.VISIBLE;
+    }
+
     private void showWatermarkSwitches() {
-        binding.watermarkSwitches.animate()
-                .translationY(0)
-                .setDuration(ANIMATION_DURATION)
-                .withStartAction(() -> {
-                    binding.watermarkSwitches.setVisibility(View.VISIBLE);
-                    final float translationY = getHeightWithMargin(binding.watermarkSwitches);
-                    binding.watermarkSwitches.setTranslationY(translationY);
-                    binding.watermark.setTranslationY(translationY);
-                });
-        binding.watermark
-                .animate()
-                .translationY(0)
-                .setDuration(ANIMATION_DURATION);
+        if (currentTemplate == 0) {
+            binding.watermarkSwitches.setVisibility(View.VISIBLE);
+        }
+        binding.templateSwitches.setVisibility(View.VISIBLE);
         binding.watermarkSwitch.setImageResource(R.drawable.ic_watermark_highlight);
     }
 
-    private void hideWatermarkSwitches(final int duration) {
-        binding.watermark
-                .animate()
-                .translationY(getHeightWithMargin(binding.watermarkSwitches))
-                .setDuration(duration);
-        binding.watermarkSwitches.animate()
-                .translationY(getHeightWithMargin(binding.watermarkSwitches))
-                .setDuration(duration)
-                .withEndAction(() -> {
-                    binding.watermarkSwitches.setVisibility(View.GONE);
-                    binding.watermark.setTranslationY(0f);
-                });
-        binding.watermarkSwitch.setImageResource(R.drawable.ic_watermark);
-    }
-
     private void hideWatermarkSwitches() {
-        hideWatermarkSwitches(ANIMATION_DURATION);
+        if (currentTemplate == 0) {
+            binding.watermarkSwitches.setVisibility(View.GONE);
+        }
+        binding.templateSwitches.setVisibility(View.GONE);
+        binding.watermarkSwitch.setImageResource(R.drawable.ic_watermark);
     }
 
     private void makeToast(final String message) {
@@ -401,6 +452,49 @@ public class MainActivity extends AppCompatActivity {
         adjustWatermark();
     }
 
+    private void setFixedLocationWatermark() {
+        binding.location2.setText("");
+        binding.location3.setText("");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.INTERNET}, SET_FIXED_LOCATION_WATERMARK);
+            return;
+        }
+
+        final LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, location -> {
+                if (Geocoder.isPresent()) {
+                    try {
+                        final double latitude = location.getLatitude();
+                        final double longitude = location.getLongitude();
+                        final List<Address> addresses = new Geocoder(MainActivity.this).getFromLocation(latitude, longitude, 1);
+                        if (addresses == null || addresses.isEmpty()) {
+                            makeToast("No matching addresses were found or there is no backend service available");
+                        } else {
+                            final Address address = addresses.get(0);
+                            final String loc = address.getLocality() + " " +
+                                    address.getSubLocality() + " " +
+                                    address.getFeatureName();
+                            binding.location2.setText(loc);
+                            binding.location3.setText(loc);
+                        }
+                    } catch (IOException e) {
+                        makeToast(e);
+                    }
+                } else {
+                    makeToast("Geocoder is not present");
+                }
+            }, null);
+        } else {
+            makeToast("Network provider is not enabled");
+        }
+    }
+
     private void enableLatLongWatermark() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -425,8 +519,8 @@ public class MainActivity extends AppCompatActivity {
                     final double latitude = location.getLatitude();
                     binding.latLong.setText(String.format(Locale.getDefault(),
                             "%.2f° %c, %.2f° %c",
-                            longitude, longitude >= 0 ? 'E' : 'W',
-                            latitude, latitude >= 0 ? 'N' : 'S'));
+                            Math.abs(longitude), longitude >= 0 ? 'E' : 'W',
+                            Math.abs(latitude), latitude >= 0 ? 'N' : 'S'));
                     adjustWatermark();
                     return;
                 } else {
@@ -447,36 +541,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void adjustWatermark() {
-        binding.fixedWatermark.setVisibility(datetimeWatermarkEnabled || locationWatermarkEnabled || latLongWatermarkEnabled ? View.VISIBLE : View.GONE);
-        if (binding.fixedWatermark.getVisibility() == View.VISIBLE || binding.txt.getVisibility() == View.VISIBLE) {
-            if (binding.watermark.getVisibility() == View.GONE) {
-                binding.watermark.animate()
-                        .alpha(1.f)
-                        .translationY(0)
-                        .setDuration(ANIMATION_DURATION)
-                        .setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                super.onAnimationEnd(animation);
-                                binding.watermark.setVisibility(View.VISIBLE);
-                            }
-                        });
-            }
-        } else {
-            if (binding.watermark.getVisibility() == View.VISIBLE) {
-                binding.watermark.animate()
-                        .alpha(0.f)
-                        .translationY(getHeightWithMargin(binding.watermark))
-                        .setDuration(ANIMATION_DURATION)
-                        .setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                super.onAnimationEnd(animation);
-                                binding.watermark.setVisibility(View.GONE);
-                            }
-                        });
-            }
-        }
+        binding.fixedWatermark.setVisibility(
+                datetimeWatermarkEnabled || locationWatermarkEnabled || latLongWatermarkEnabled
+                        ? View.VISIBLE
+                        : View.GONE);
+        binding.watermark.setVisibility(
+                binding.fixedWatermark.getVisibility() == View.VISIBLE || binding.txt.getVisibility() == View.VISIBLE
+                        ? View.VISIBLE
+                        : View.GONE);
     }
 
     private void capture(final CameraCaptureSession session, final CaptureRequest preview) {
@@ -555,25 +627,17 @@ public class MainActivity extends AppCompatActivity {
                                     final CaptureRequest preview = builder.build();
                                     session.setRepeatingRequest(preview, null, daemon);
                                     binding.capture.setOnClickListener(v -> {
-                                        if (binding.watermarkSwitches.getVisibility() == View.VISIBLE) {
-                                            hideWatermarkSwitches(1);
-                                        }
+                                        hideWatermarkSwitches();
                                         binding.txt.clearFocus();
                                         if (delay == 0) {
                                             capture(session, preview);
                                         } else {
-                                            binding.flash.animate().alpha(0f).setDuration(50);
-                                            binding.timer.animate().alpha(0f).setDuration(50);
-                                            binding.switchCamera.animate().alpha(0f).setDuration(50);
-                                            binding.thumbnail.animate().alpha(0f).setDuration(50);
-                                            binding.watermarkSwitch.animate().alpha(0f).setDuration(50);
-                                            binding.flash.setClickable(false);
-                                            binding.timer.setClickable(false);
-                                            binding.switchCamera.setClickable(false);
-                                            binding.thumbnail.setClickable(false);
-                                            binding.watermarkSwitch.setClickable(false);
-                                            binding.txt.setEnabled(false);
-                                            binding.capture.setClickable(false);
+                                            binding.flash.setVisibility(View.GONE);
+                                            binding.timer.setVisibility(View.GONE);
+                                            binding.switchCamera.setVisibility(View.GONE);
+                                            binding.thumbnail.setVisibility(View.GONE);
+                                            binding.watermarkSwitch.setVisibility(View.GONE);
+                                            getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                                             final Timer timer = new Timer();
                                             timer.schedule(new TimerTask() {
                                                 int remain = delay;
@@ -587,19 +651,13 @@ public class MainActivity extends AppCompatActivity {
                                                             binding.capture.setText("");
                                                             if (MainActivity.this.camera == camera) {
                                                                 capture(session, preview);
-                                                                binding.flash.animate().alpha(1f).setDuration(50);
-                                                                binding.timer.animate().alpha(1f).setDuration(50);
-                                                                binding.switchCamera.animate().alpha(1f).setDuration(50);
-                                                                binding.thumbnail.animate().alpha(1f).setDuration(50);
-                                                                binding.watermarkSwitch.animate().alpha(1f).setDuration(50);
-                                                                binding.flash.setClickable(true);
-                                                                binding.timer.setClickable(true);
-                                                                binding.switchCamera.setClickable(true);
-                                                                binding.thumbnail.setClickable(true);
-                                                                binding.watermarkSwitch.setClickable(true);
-                                                                binding.txt.setEnabled(true);
-                                                                binding.capture.setClickable(true);
                                                             }
+                                                            binding.flash.setVisibility(View.VISIBLE);
+                                                            binding.timer.setVisibility(View.VISIBLE);
+                                                            binding.switchCamera.setVisibility(View.VISIBLE);
+                                                            binding.thumbnail.setVisibility(View.VISIBLE);
+                                                            binding.watermarkSwitch.setVisibility(View.VISIBLE);
+                                                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                                                         }
                                                     });
                                                 }
@@ -698,7 +756,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (SecurityException e) {
             makeToast(e);
         }
-        final int size = (int) (38.f * getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        final int size = (int) (38f * getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         final Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.DKGRAY);
         thumbnail = null;
@@ -706,8 +764,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setThumbnail(final Bitmap bitmap) {
-        final RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-        roundedBitmapDrawable.setCornerRadius(bitmap.getWidth() * .15f);
+        final RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+        drawable.setCornerRadius(bitmap.getWidth() * .15f);
         binding.thumbnail.animate()
                 .scaleY(0f)
                 .setDuration(30)
@@ -715,7 +773,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        binding.thumbnail.setImageDrawable(roundedBitmapDrawable);
+                        binding.thumbnail.setImageDrawable(drawable);
                         binding.thumbnail.animate()
                                 .scaleY(1f)
                                 .setDuration(30);
@@ -735,10 +793,5 @@ public class MainActivity extends AppCompatActivity {
                 bitmap.getWidth() > bitmap.getHeight() ? start : 0,
                 bitmap.getWidth() > bitmap.getHeight() ? 0 : start,
                 size, size));
-    }
-
-    private int getHeightWithMargin(final View view) {
-        final ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
-        return view.getHeight() + lp.topMargin + lp.bottomMargin;
     }
 }

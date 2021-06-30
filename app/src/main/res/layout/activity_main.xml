@@ -11,6 +11,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:background="@color/black"
         android:orientation="horizontal">
 
@@ -64,151 +65,365 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:animateLayoutChanges="true"
             android:gravity="bottom"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/watermark"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_margin="10dp"
-                android:animateLayoutChanges="true"
-                android:background="@drawable/shadow"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <EditText
-                    android:id="@+id/txt"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:background="#00000000"
-                    android:hint="在此处自定义水印文本"
-                    android:inputType="textMultiLine"
-                    android:padding="10dp"
-                    android:scrollbars="vertical"
-                    android:textColor="@color/white"
-                    android:textColorHint="#c0ffffff"
-                    android:textSize="17sp" />
-
-                <TableLayout
-                    android:id="@+id/fixedWatermark"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/shadow2"
-                    android:padding="10dp">
-
-                    <TableRow
-                        android:id="@+id/datetimeWatermark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp">
-
-                        <ImageView
-                            style="@style/Watermark.ImageView"
-                            android:layout_gravity="center"
-                            app:srcCompat="@drawable/ic_clock" />
-
-                        <TextView
-                            android:id="@+id/datetime"
-                            style="@style/Watermark.TextView" />
-                    </TableRow>
-
-                    <TableRow
-                        android:id="@+id/locationWatermark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:visibility="gone">
-
-                        <ImageView
-                            style="@style/Watermark.ImageView"
-                            android:layout_gravity="center"
-                            app:srcCompat="@drawable/ic_location" />
-
-                        <TextView
-                            android:id="@+id/location"
-                            style="@style/Watermark.TextView" />
-                    </TableRow>
-
-                    <TableRow
-                        android:id="@+id/latLongWatermark"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:visibility="gone">
-
-                        <ImageView
-                            style="@style/Watermark.ImageView"
-                            android:layout_gravity="center"
-                            app:srcCompat="@drawable/ic_lat_long" />
-
-                        <TextView
-                            android:id="@+id/latLong"
-                            style="@style/Watermark.TextView" />
-                    </TableRow>
-
-                </TableLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/watermarkSwitches"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="10dp"
-                android:animateLayoutChanges="true"
-                android:background="@drawable/shadow"
-                android:orientation="horizontal"
-                android:padding="10dp">
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:animateLayoutChanges="true">
 
-                <Space
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/template0"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:animateLayoutChanges="true"
+                    android:gravity="bottom"
+                    android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/datetimeWatermarkSwitch"
-                    style="@style/WatermarkSwitch.ImageView"
-                    android:src="@drawable/ic_clock_highlight" />
+                    <LinearLayout
+                        android:id="@+id/watermark"
+                        style="@style/Background.Shadow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:animateLayoutChanges="true"
+                        android:orientation="vertical"
+                        android:padding="7dp">
 
-                <Space
-                    android:layout_width="0dp"
+                        <EditText
+                            android:id="@+id/txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="5dp"
+                            android:background="#00000000"
+                            android:hint="在此处自定义水印文本"
+                            android:inputType="textMultiLine"
+                            android:padding="10dp"
+                            android:scrollbars="vertical"
+                            android:textColor="@color/white"
+                            android:textColorHint="#c0ffffff"
+                            android:textSize="17sp" />
+
+                        <TableLayout
+                            android:id="@+id/fixedWatermark"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:animateLayoutChanges="true"
+                            android:background="@drawable/shadow2"
+                            android:padding="10dp">
+
+                            <TableRow
+                                android:id="@+id/datetimeWatermark"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="2dp">
+
+                                <ImageView
+                                    style="@style/Watermark.ImageView"
+                                    android:layout_gravity="center"
+                                    app:srcCompat="@drawable/ic_clock" />
+
+                                <TextView
+                                    android:id="@+id/datetime"
+                                    style="@style/Watermark.TextView" />
+                            </TableRow>
+
+                            <TableRow
+                                android:id="@+id/locationWatermark"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="2dp"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    style="@style/Watermark.ImageView"
+                                    android:layout_gravity="center"
+                                    app:srcCompat="@drawable/ic_location" />
+
+                                <TextView
+                                    android:id="@+id/location"
+                                    style="@style/Watermark.TextView" />
+                            </TableRow>
+
+                            <TableRow
+                                android:id="@+id/latLongWatermark"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="2dp"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    style="@style/Watermark.ImageView"
+                                    android:layout_gravity="center"
+                                    app:srcCompat="@drawable/ic_lat_long" />
+
+                                <TextView
+                                    android:id="@+id/latLong"
+                                    style="@style/Watermark.TextView" />
+                            </TableRow>
+
+                        </TableLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/watermarkSwitches"
+                        style="@style/Background.Shadow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp">
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:id="@+id/datetimeWatermarkSwitch"
+                            style="@style/WatermarkSwitch.ImageView"
+                            android:src="@drawable/ic_clock_highlight" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:id="@+id/locationWatermarkSwitch"
+                            style="@style/WatermarkSwitch.ImageView"
+                            android:src="@drawable/ic_location" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:id="@+id/latLongWatermarkSwitch"
+                            style="@style/WatermarkSwitch.ImageView"
+                            android:src="@drawable/ic_lat_long" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:id="@+id/txtWatermarkSwitch"
+                            style="@style/WatermarkSwitch.ImageView"
+                            android:src="@drawable/txt_highlight" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/template1"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:visibility="gone">
 
-                <ImageView
-                    android:id="@+id/locationWatermarkSwitch"
-                    style="@style/WatermarkSwitch.ImageView"
-                    android:src="@drawable/ic_location" />
+                    <ImageView
+                        android:layout_width="100sp"
+                        android:layout_height="100sp"
+                        android:layout_gravity="start|bottom"
+                        android:layout_margin="20sp"
+                        app:srcCompat="@drawable/calendar" />
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    <TextView
+                        android:id="@+id/month"
+                        android:layout_width="100sp"
+                        android:layout_height="25sp"
+                        android:layout_gravity="start|bottom"
+                        android:layout_marginStart="20sp"
+                        android:layout_marginBottom="80sp"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="19sp" />
 
-                <ImageView
-                    android:id="@+id/latLongWatermarkSwitch"
-                    style="@style/WatermarkSwitch.ImageView"
-                    android:src="@drawable/ic_lat_long" />
+                    <TextView
+                        android:id="@+id/day"
+                        android:layout_width="100sp"
+                        android:layout_height="64sp"
+                        android:layout_gravity="start|bottom"
+                        android:layout_marginStart="20sp"
+                        android:layout_marginBottom="20sp"
+                        android:textAlignment="center"
+                        android:textColor="#555555"
+                        android:textSize="47sp" />
+                </FrameLayout>
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                <LinearLayout
+                    android:id="@+id/template2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|bottom"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <ImageView
-                    android:id="@+id/txtWatermarkSwitch"
-                    style="@style/WatermarkSwitch.ImageView"
-                    android:src="@drawable/txt_highlight" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                        <TextView
+                            android:id="@+id/time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:gravity="center"
+                            android:textColor="@color/white"
+                            android:textSize="45sp" />
+
+                        <View
+                            android:layout_width="3dp"
+                            android:layout_height="45sp"
+                            android:layout_gravity="center"
+                            android:background="@color/yellow" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="bottom"
+                                android:textColor="@color/white"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/dayOfWeek"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="top"
+                                android:textColor="@color/white"
+                                android:textSize="17sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/location2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="5dp"
+                        android:paddingEnd="5dp"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/template3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|bottom"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/white_background"
+                        android:orientation="horizontal"
+                        android:padding="1dp"
+                        android:paddingStart="3dp"
+                        android:paddingEnd="1dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@drawable/green_background"
+                            android:paddingStart="7dp"
+                            android:paddingEnd="7dp"
+                            android:text="✓ 打卡"
+                            android:textColor="@color/white"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/time2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="8dp"
+                            android:textColor="@color/green"
+                            android:textSize="23sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/date2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="2dp"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/location3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="2dp"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/white"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/templateSwitches"
+                style="@style/Background.Shadow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:padding="10dp"
+                    android:text="模板"
+                    android:textColor="#bbbbbb"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/template0Switch"
+                    style="@style/WatermarkSwitch.TextView"
+                    android:background="@drawable/yellow_shadow"
+                    android:text="📄"
+                    android:textColor="@color/yellow" />
+
+                <TextView
+                    android:id="@+id/template1Switch"
+                    style="@style/WatermarkSwitch.TextView"
+                    android:text="📆" />
+
+                <TextView
+                    android:id="@+id/template2Switch"
+                    style="@style/WatermarkSwitch.TextView"
+                    android:text="🕜" />
+
+                <TextView
+                    android:id="@+id/template3Switch"
+                    style="@style/WatermarkSwitch.TextView"
+                    android:text="🚩" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
@@ -216,6 +431,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:background="@color/black"
         android:orientation="horizontal"
         android:paddingStart="40dp"

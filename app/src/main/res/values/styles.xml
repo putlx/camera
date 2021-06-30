@@ -17,9 +17,26 @@
         <item name="android:background">#00000000</item>
     </style>
 
+    <style name="Background.Shadow" parent="">
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:background">@drawable/shadow</item>
+    </style>
+
     <style name="WatermarkSwitch.ImageView" parent="">
         <item name="android:layout_height">25dp</item>
         <item name="android:layout_width">25dp</item>
+    </style>
+
+    <style name="WatermarkSwitch.TextView" parent="">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 
     <style name="Watermark.ImageView" parent="">
