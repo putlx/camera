@@ -627,11 +627,11 @@ public class MainActivity extends AppCompatActivity {
                                         if (delay == 0) {
                                             capture(session, preview);
                                         } else {
-                                            binding.flash.setVisibility(View.GONE);
-                                            binding.timer.setVisibility(View.GONE);
-                                            binding.switchCamera.setVisibility(View.GONE);
-                                            binding.thumbnail.setVisibility(View.GONE);
-                                            binding.watermarkSwitch.setVisibility(View.GONE);
+                                            binding.flash.setVisibility(View.INVISIBLE);
+                                            binding.timer.setVisibility(View.INVISIBLE);
+                                            binding.switchCamera.setVisibility(View.INVISIBLE);
+                                            binding.thumbnail.setVisibility(View.INVISIBLE);
+                                            binding.watermarkSwitch.setVisibility(View.INVISIBLE);
                                             getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                                             final Timer timer = new Timer();
                                             timer.schedule(new TimerTask() {
