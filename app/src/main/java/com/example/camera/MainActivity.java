@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         daemon = new Handler(thread.getLooper());
 
         binding.watermarkSwitch.setOnClickListener(v -> {
-            if (watermarkSwitchesVisible()) {
+            if (binding.templateSwitches.getVisibility() == View.VISIBLE) {
                 hideWatermarkSwitches();
             } else {
                 showWatermarkSwitches();
@@ -246,32 +246,31 @@ public class MainActivity extends AppCompatActivity {
                         makeToast("No camera available");
                         finishAffinity();
                     }
-                    binding.frameLayout.animate().alpha(.5f).scaleX(.8f).scaleY(.8f).setDuration(170);
                     binding.frameLayout
-                            .animate()
-                            .alpha(0f)
-                            .scaleX(0f)
-                            .setDuration(170)
-                            .withStartAction(() -> {
-                                if (Arrays.stream(cameraIdList).anyMatch(id -> id.equals(cameraId))) {
-                                    for (int i = 0; i < cameraIdList.length; ++i) {
-                                        if (cameraIdList[i].equals(cameraId)) {
-                                            cameraId = cameraIdList[i == cameraIdList.length - 1 ? 0 : i + 1];
-                                            return;
+                            .animate().alpha(.5f).scaleX(.85f).scaleY(.85f).setDuration(130)
+                            .withEndAction(() -> binding.frameLayout
+                                    .animate()
+                                    .alpha(0f)
+                                    .scaleX(.3f)
+                                    .setDuration(110)
+                                    .withStartAction(() -> {
+                                        for (int i = 0; i < cameraIdList.length; ++i) {
+                                            if (cameraIdList[i].equals(cameraId)) {
+                                                cameraId = cameraIdList[i == cameraIdList.length - 1 ? 0 : i + 1];
+                                                return;
+                                            }
                                         }
-                                    }
-                                }
-                                cameraId = cameraIdList[0];
-                            })
-                            .withEndAction(() -> {
-                                initializeCamera(binding.textureView.getWidth(), binding.textureView.getHeight());
-                                binding.frameLayout
-                                        .animate()
-                                        .alpha(.5f)
-                                        .scaleX(.8f)
-                                        .setDuration(170);
-                                binding.frameLayout.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(170);
-                            });
+                                        cameraId = cameraIdList[0];
+                                    })
+                                    .withEndAction(() -> {
+                                        initializeCamera(binding.textureView.getWidth(), binding.textureView.getHeight());
+                                        binding.frameLayout
+                                                .animate()
+                                                .alpha(.5f)
+                                                .scaleX(.85f)
+                                                .setDuration(110)
+                                                .withEndAction(() -> binding.frameLayout.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(130));
+                                    }));
                 } catch (CameraAccessException e) {
                     makeToast(e);
                     finishAffinity();
@@ -343,15 +342,15 @@ public class MainActivity extends AppCompatActivity {
     private void updateDatetime() {
         final String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         final String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-        final String day_of_week = DAY_OF_WEEK[Calendar.getInstance().get(Calendar.DAY_OF_WEEK)];
+        final String dayOfWeek = DAY_OF_WEEK[Calendar.getInstance().get(Calendar.DAY_OF_WEEK)];
         binding.datetime.setText(String.format("%s %s", date, time));
         binding.time.setText(time);
         binding.time2.setText(time);
         binding.date.setText(date);
-        binding.date2.setText(String.format("%s %s", day_of_week, date));
+        binding.date2.setText(String.format("%s %s", dayOfWeek, date));
         binding.month.setText(MONTHS[Calendar.getInstance().get(Calendar.MONTH)]);
         binding.day.setText(String.format(Locale.getDefault(), "%02d", Calendar.getInstance().get(Calendar.DATE)));
-        binding.dayOfWeek.setText(day_of_week);
+        binding.dayOfWeek.setText(dayOfWeek);
     }
 
     private void setCurrentTemplate(final int n) {
@@ -367,10 +366,6 @@ public class MainActivity extends AppCompatActivity {
         if (n == 2 || n == 3) {
             setFixedLocationWatermark();
         }
-    }
-
-    private boolean watermarkSwitchesVisible() {
-        return binding.templateSwitches.getVisibility() == View.VISIBLE;
     }
 
     private void showWatermarkSwitches() {
