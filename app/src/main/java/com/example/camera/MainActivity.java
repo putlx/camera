@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 ui.post(() -> updateDatetime());
             }
-        }, 62 - Calendar.getInstance().get(Calendar.SECOND), 60000);
+        }, (62 - Calendar.getInstance().get(Calendar.SECOND)) * 1000, 60000);
 
         binding.datetimeWatermarkSwitch.setOnClickListener(v -> {
             datetimeWatermarkEnabled = !datetimeWatermarkEnabled;
