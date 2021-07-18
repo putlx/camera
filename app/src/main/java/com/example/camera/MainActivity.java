@@ -1,8 +1,6 @@
 package com.example.camera;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
@@ -30,7 +27,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
@@ -187,10 +183,10 @@ public class MainActivity extends AppCompatActivity {
         binding.txtWatermarkSwitch.setOnClickListener(v -> {
             if (binding.txt.getVisibility() == View.GONE) {
                 binding.txt.setVisibility(View.VISIBLE);
-                binding.txtWatermarkSwitch.setImageResource(R.drawable.txt_highlight);
+                binding.txtWatermarkSwitch.setImageResource(R.drawable.ic_txt_highlight);
             } else {
                 binding.txt.setVisibility(View.GONE);
-                binding.txtWatermarkSwitch.setImageResource(R.drawable.txt);
+                binding.txtWatermarkSwitch.setImageResource(R.drawable.ic_txt);
             }
             adjustWatermark();
         });
@@ -749,42 +745,32 @@ public class MainActivity extends AppCompatActivity {
         } catch (SecurityException e) {
             makeToast(e);
         }
-        final int size = (int) (38f * getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-        final Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(Color.DKGRAY);
-        thumbnail = null;
-        setThumbnail(bitmap);
+        setThumbnail(null);
     }
 
-    private void setThumbnail(final Bitmap bitmap) {
+    private void setThumbnail(final String filename) {
+        thumbnail = filename;
+        if (thumbnail == null) return;
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inMutable = true;
+        Bitmap bitmap = BitmapFactory.decodeFile(thumbnail, options);
+        final int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
+        final int start = (Math.max(bitmap.getWidth(), bitmap.getHeight()) - size) / 2;
+        bitmap = Bitmap.createBitmap(bitmap,
+                bitmap.getWidth() > bitmap.getHeight() ? start : 0,
+                bitmap.getWidth() > bitmap.getHeight() ? 0 : start,
+                size, size);
         final RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
         drawable.setCornerRadius(bitmap.getWidth() * .15f);
         binding.thumbnail.animate()
                 .scaleY(0f)
                 .setDuration(30)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        binding.thumbnail.setImageDrawable(drawable);
-                        binding.thumbnail.animate()
-                                .scaleY(1f)
-                                .setDuration(30);
-                    }
+                .withEndAction(() -> {
+                    binding.thumbnail.setImageDrawable(drawable);
+                    binding.thumbnail.animate()
+                            .scaleY(1f)
+                            .setDuration(30);
                 });
-    }
-
-    private void setThumbnail(final String filename) {
-        thumbnail = filename;
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        options.inMutable = true;
-        final Bitmap bitmap = BitmapFactory.decodeFile(thumbnail, options);
-        final int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
-        final int start = (Math.max(bitmap.getWidth(), bitmap.getHeight()) - size) / 2;
-        setThumbnail(Bitmap.createBitmap(bitmap,
-                bitmap.getWidth() > bitmap.getHeight() ? start : 0,
-                bitmap.getWidth() > bitmap.getHeight() ? 0 : start,
-                size, size));
     }
 }

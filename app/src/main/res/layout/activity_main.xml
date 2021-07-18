@@ -213,7 +213,7 @@
                         <ImageView
                             android:id="@+id/txtWatermarkSwitch"
                             style="@style/WatermarkSwitch.ImageView"
-                            android:src="@drawable/txt_highlight" />
+                            android:src="@drawable/ic_txt_highlight" />
 
                         <Space
                             android:layout_width="0dp"
@@ -444,7 +444,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:layout_gravity="center_vertical"
-            tools:srcCompat="@tools:sample/avatars" />
+            android:src="@drawable/gray_background" />
 
         <Space
             android:layout_width="0dp"
