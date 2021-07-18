@@ -408,8 +408,7 @@
                     android:id="@+id/template0Switch"
                     style="@style/WatermarkSwitch.TextView"
                     android:background="@drawable/yellow_shadow"
-                    android:text="📄"
-                    android:textColor="@color/yellow" />
+                    android:text="📄" />
 
                 <TextView
                     android:id="@+id/template1Switch"

@@ -356,10 +356,8 @@ public class MainActivity extends AppCompatActivity {
     private void setCurrentTemplate(final int n) {
         if (currentTemplate != n) {
             templates[currentTemplate].setVisibility(View.GONE);
-            templateSwitches[currentTemplate].setTextColor(Color.WHITE);
             templateSwitches[currentTemplate].setBackground(null);
             templates[n].setVisibility(View.VISIBLE);
-            templateSwitches[n].setTextColor(getResources().getColor(R.color.yellow, null));
             templateSwitches[n].setBackgroundResource(R.drawable.yellow_shadow);
             currentTemplate = n;
         }
