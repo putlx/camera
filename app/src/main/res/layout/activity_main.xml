@@ -144,7 +144,8 @@
 
                                 <TextView
                                     android:id="@+id/location"
-                                    style="@style/Watermark.TextView" />
+                                    style="@style/Watermark.TextView"
+                                    android:paddingEnd="40dp" />
                             </TableRow>
 
                             <TableRow
